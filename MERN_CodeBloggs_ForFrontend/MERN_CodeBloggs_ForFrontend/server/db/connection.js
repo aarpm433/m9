@@ -5,7 +5,7 @@ import mongoose from 'mongoose';
 const URL = process.env.MONGO_URI || "";
 const CLIENT = new MongoClient(URL);
 
-await mongoose.connect(CONNECTION_STRING, {
+await mongoose.connect(URL, {
     dbName: "Module09-10"
 });
 
