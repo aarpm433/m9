@@ -38,11 +38,12 @@ export default function Login() {
     e.preventDefault();
     try {
       // Login
-      const loginRes = await fetch("/session/login", {
+      const loginRes = await fetch("http://localhost:5050/session/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
+
       const loginData = await loginRes.json();
       if (!loginRes.ok) {
         setError(loginData.error || "Login failed");
@@ -50,7 +51,7 @@ export default function Login() {
       }
 
       // Create session
-      const sessionRes = await fetch(`/session/${loginData.id}`, {
+      const sessionRes = await fetch(`http://localhost:5050/session/${loginData.id}`, {
         method: "POST",
       });
       const sessionData = await sessionRes.json();
@@ -71,10 +72,9 @@ export default function Login() {
 
   return (
     <form onSubmit={handleSubmit} className="p-4 mx-auto" style={{ maxWidth: "400px" }}>
-      <h2 className="mb">Login</h2>
+      <h2 className="mb-3">Login</h2>
 
-      <div className="mb">
-        <label htmlFor="email" className="form-label"></label>
+      <div className="mb-3">
         <input
           type="email"
           id="email"
@@ -87,8 +87,7 @@ export default function Login() {
         />
       </div>
 
-      <div className="mb">
-        <label htmlFor="password" className="form-label"></label>
+      <div className="mb-3">
         <input
           type="password"
           id="password"
