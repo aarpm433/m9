@@ -4,13 +4,15 @@ import { Alert } from "react-bootstrap";
 
 export default function Register() {
   const [form, setForm] = useState({
-    firstname: "",
-    lastname: "",
+    first_name: "",
+    last_name: "",
     email: "",
     password: "",
     birthday: "",
     occupation: "",
     location: "",
+    auth_level:"basic",
+    status:"",
   });
 
   const [error, setError] = useState("");

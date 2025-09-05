@@ -1,33 +1,44 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Alert } from "react-bootstrap";
+import { useCookies } from "react-cookie";
 
 export default function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
   const navigate = useNavigate();
+  const [cookies, setCookie, removeCookie] = useCookies(["session_token", "user"]);
 
-  // Check for existing session token on load
-  useEffect(() => {
-    const token = localStorage.getItem("session_token");
-    if (token) {
-      // Optionally validate the token with backend
-      fetch(`/validate_token?token=${token}`)
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.status === "ok" && data.data.valid) {
-            navigate("/"); // redirect if token is valid
-          } else {
-            localStorage.removeItem("session_token");
-            localStorage.removeItem("user");
-          }
-        })
-        .catch(() => {
-          localStorage.removeItem("session_token");
-          localStorage.removeItem("user");
-        });
-    }
-  }, [navigate]);
+  // Check for existing session_token on load
+useEffect(() => {
+  let timeout = setTimeout(() => setLoading(false), 5000); // fallback
+  const token = cookies.session_token;
+  if (token) {
+    fetch(`http://localhost:5050/validate_token?token=${token}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.status === "ok" && data.data.valid) {
+          navigate("/");
+        } else {
+          removeCookie("session_token", { path: "/" });
+          removeCookie("user", { path: "/" });
+          setShowForm(true);
+        }
+      })
+      .catch(() => {
+        removeCookie("session_token", { path: "/" });
+        removeCookie("user", { path: "/" });
+        setShowForm(true);
+      })
+      .finally(() => setLoading(false));
+  } else {
+    setShowForm(true);
+    setLoading(false);
+  }
+  return () => clearTimeout(timeout);
+}, [cookies.session_token, navigate, removeCookie]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -54,14 +65,16 @@ export default function Login() {
       const sessionRes = await fetch(`http://localhost:5050/session/${loginData.id}`, {
         method: "POST",
       });
+
       const sessionData = await sessionRes.json();
       if (!sessionRes.ok) {
         setError(sessionData.message || "Session creation failed");
         return;
       }
 
-      localStorage.setItem("session_token", sessionData.data.token);
-      localStorage.setItem("user", JSON.stringify(loginData));
+      // Save cookies
+      setCookie("session_token", sessionData.data.token, { path: "/", sameSite: "lax" });
+      setCookie("user", JSON.stringify(loginData), { path: "/", sameSite: "lax" });
 
       navigate("/"); // redirect to dashboard/home
     } catch (err) {
@@ -70,7 +83,9 @@ export default function Login() {
     }
   };
 
-  return (
+  if (loading) return null; // or a spinner
+
+  return showForm ? (
     <form onSubmit={handleSubmit} className="p-4 mx-auto" style={{ maxWidth: "400px" }}>
       <h2 className="mb-3">Login</h2>
 
@@ -99,10 +114,11 @@ export default function Login() {
           required
         />
       </div>
-    <a href="/register">Don't have an account? Register here.</a>
+
+      <a href="/register">Don't have an account? Register here.</a>
       {error && <Alert variant="danger">{error}</Alert>}
 
       <button type="submit" className="btn btn-primary w-100">Login</button>
     </form>
-  );
+  ) : null;
 }
