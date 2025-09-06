@@ -43,8 +43,11 @@ export default function Header() {
               style={{ height: "80px", width: "80px", objectFit: "contain" }}
             />
           </NavLink>
-          <h4 className="">CodeBloggs</h4>
-        </div>
+            <img
+              alt="CodeBloggs_logo"
+              src="/CodeBloggs.png"
+              style={{ height: "200px", width: "200px", objectFit: "contain" }}
+            />        </div>
 
         {/* Right: Actions */}
         <div className="">
@@ -79,17 +82,21 @@ export default function Header() {
       {/* Modal for Post */}
       <Modal show={showModal} onHide={() => setShowModal(false)}>
         <Modal.Header closeButton>
-          <Modal.Title>Create a Post</Modal.Title>
+          <Modal.Title style={{width:"100%", textAlign:`center`}}>Blogg Something!</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <p>Post form or content here.</p>
+          <form>
+            <div className="mb-3">
+              <textarea className="form-control" id="postContent" rows="4" placeholder="Blogg Something!"></textarea>
+            </div>
+          </form>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowModal(false)}>
             Close
           </Button>
           <Button variant="primary" onClick={() => setShowModal(false)}>
-            Save Post
+            Post
           </Button>
         </Modal.Footer>
       </Modal>

@@ -7,6 +7,7 @@ import App from './App.jsx';
 import Login from "./components/Login.jsx";
 import Register from './components/Register.jsx';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import Home from './components/Home.jsx';
 
 
 createRoot(document.getElementById('root')).render(
@@ -17,6 +18,7 @@ createRoot(document.getElementById('root')).render(
           <Route path="/" element={<App />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/home" element={<Home />} />
           <Route path="/settings" element={<div>Settings Page (to be implemented)</div>} />
         </Routes>
       </BrowserRouter>
