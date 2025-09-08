@@ -26,12 +26,13 @@ const sessionLogin = async (req, res) => {
         }
 
         // Respond with user details
-        const { _id, first_name, last_name, auth_level } = USER;
+        const { _id, first_name, last_name, auth_level,status } = USER;
         return res.status(200).json({
             id: _id.toString(),
             first_name,
             last_name,
-            auth_level
+            auth_level,
+            status
         });
     } catch (error) {
         console.error("Error during login:", error);
@@ -206,12 +207,12 @@ const sessionValidateToken = async (req, res) => {
         }
 
         // Extract and return user details
-        const { _id, first_name, last_name, auth_level } = USER;
+        const { _id, first_name, last_name, auth_level, status } = USER;
         return res.status(200).json({
             status: 'ok',
             data: {
                 valid: true,
-                user: { id: _id.toString(), first_name, last_name, auth_level },
+                user: { id: _id.toString(), first_name, last_name, auth_level, status },
             },
             message: 'Session token validated successfully',
         });

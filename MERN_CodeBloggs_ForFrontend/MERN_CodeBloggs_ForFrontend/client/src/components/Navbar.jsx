@@ -9,17 +9,21 @@ export default function Header() {
   const [cookies, setCookie, removeCookie] = useCookies(["session_token", "user"]);
   const navigate = useNavigate();
   const [showToast, setShowToast] = useState(false);
+  const [postContent, setPostContent] = useState("");
 
-  // Parse user name from cookie
+
+  // Parse user name from cookieclient
   let userName = "User";
+  let user_id = null;
   if (cookies.user) {
     try {
-      const userObj = typeof cookies.user === "string" ? JSON.parse(cookies.user) : cookies.user;
-      userName = userObj.first_name ? userObj.first_name : "User";
+    const userObj = typeof cookies.user === "string" ? JSON.parse(cookies.user) : cookies.user;
+    user_id = userObj.id ?? null;
+    userName = userObj.first_name ? userObj.first_name : "User";
     } catch {
       userName = "User";
     }
-  }
+  }  
 
   const handleLogout = async () => {
     setOpen(false);
@@ -30,28 +34,51 @@ export default function Header() {
     removeCookie("user", { path: "/" });
     navigate("/login");
   };
+  const handlePost = async () => {
+    console.log("1:", postContent);
+  if (!postContent.trim()) return;
+  console.log("2:", user_id);
+  try {
+    await fetch("http://localhost:5050/post", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        content: postContent,
+        user_id: user_id,
+      }),
+    });
+    setPostContent("");
+    setShowModal(false);
+    // Optionally: show a toast or refresh posts
+  } catch (e) {
+    // Optionally: handle error
+  }
+};
 
   return (
     <>
-      <header className="flex items-center justify-between py-3 px-8 shadow bg-white w-full flex-nowrap">
+      <header className="py-3 px-8 shadow bg-white w-full flex-nowrap">
         {/* Left: Logo and Title */}
         <div className="">
-          <NavLink to="/">
+          <NavLink to="/home">
             <img
               alt="CodeBloggs_logo"
               src="/CBG.png"
               style={{ height: "80px", width: "80px", objectFit: "contain" }}
             />
           </NavLink>
-          <h4 className="">CodeBloggs</h4>
-        </div>
+            <img
+              alt="CodeBloggs_logo"
+              src="/CodeBloggs.png"
+              style={{ height: "200px", width: "200px", objectFit: "contain" }}
+            />        </div>
 
         {/* Right: Actions */}
         <div className="">
           <button className="btn btn-primary" onClick={() => setShowModal(true)}>
             Post
           </button>
-          <div className="relative">
+          <div className="">
             <button onClick={() => setOpen(!open)} className="btn btn-secondary">
               {userName} ▾
             </button>
@@ -77,24 +104,33 @@ export default function Header() {
       </header>
 
       {/* Modal for Post */}
-      <Modal show={showModal} onHide={() => setShowModal(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>Create a Post</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <p>Post form or content here.</p>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowModal(false)}>
-            Close
-          </Button>
-          <Button variant="primary" onClick={() => setShowModal(false)}>
-            Save Post
-          </Button>
-        </Modal.Footer>
-      </Modal>
-
-      {/* Toast outside header, fixed position */}
+<Modal show={showModal} onHide={() => setShowModal(false)}>
+  <Modal.Header closeButton>
+    <Modal.Title style={{ width: "100%", textAlign: "center" }}>Blogg Something!</Modal.Title>
+  </Modal.Header>
+  <Modal.Body>
+    <form onSubmit={e => { e.preventDefault(); handlePost(); }}>
+      <div className="mb-3">
+        <textarea
+          className="form-control"
+          id="postContent"
+          rows="4"
+          placeholder="Blogg Something!"
+          value={postContent}
+          onChange={e => setPostContent(e.target.value)}
+        ></textarea>
+      </div>
+    </form>
+  </Modal.Body>
+  <Modal.Footer>
+    <Button variant="secondary" onClick={() => setShowModal(false)}>
+      Close
+    </Button>
+    <Button variant="primary" onClick={handlePost}>
+      Post
+    </Button>
+  </Modal.Footer>
+</Modal>      {/* Toast outside header, fixed position */}
       <Toast
         onClose={() => setShowToast(false)}
         show={showToast}

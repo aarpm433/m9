@@ -76,7 +76,7 @@ useEffect(() => {
       setCookie("session_token", sessionData.data.token, { path: "/", sameSite: "lax" });
       setCookie("user", JSON.stringify(loginData), { path: "/", sameSite: "lax" });
 
-      navigate("/"); // redirect to dashboard/home
+      navigate("/home"); // redirect to dashboard/home
     } catch (err) {
       console.error(err);
       setError("Server error. Please try again.");
