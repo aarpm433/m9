@@ -12,17 +12,18 @@ export default function Header() {
   const [postContent, setPostContent] = useState("");
 
 
-  // Parse user name from cookie
+  // Parse user name from cookieclient
   let userName = "User";
+  let user_id = null;
   if (cookies.user) {
     try {
-      const user_id = userObj && userObj._id ? userObj._id : undefined;
-      const userObj = typeof cookies.user === "string" ? JSON.parse(cookies.user) : cookies.user;
-      userName = userObj.first_name ? userObj.first_name : "User";
+    const userObj = typeof cookies.user === "string" ? JSON.parse(cookies.user) : cookies.user;
+    user_id = userObj.id ?? null;
+    userName = userObj.first_name ? userObj.first_name : "User";
     } catch {
       userName = "User";
     }
-  }
+  }  
 
   const handleLogout = async () => {
     setOpen(false);
@@ -36,9 +37,9 @@ export default function Header() {
   const handlePost = async () => {
     console.log("1:", postContent);
   if (!postContent.trim()) return;
+  console.log("2:", user_id);
   try {
     await fetch("http://localhost:5050/post", {
-    
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -56,10 +57,10 @@ export default function Header() {
 
   return (
     <>
-      <header className="flex items-center justify-between py-3 px-8 shadow bg-white w-full flex-nowrap">
+      <header className="py-3 px-8 shadow bg-white w-full flex-nowrap">
         {/* Left: Logo and Title */}
         <div className="">
-          <NavLink to="/">
+          <NavLink to="/home">
             <img
               alt="CodeBloggs_logo"
               src="/CBG.png"
@@ -77,7 +78,7 @@ export default function Header() {
           <button className="btn btn-primary" onClick={() => setShowModal(true)}>
             Post
           </button>
-          <div className="relative">
+          <div className="">
             <button onClick={() => setOpen(!open)} className="btn btn-secondary">
               {userName} ▾
             </button>

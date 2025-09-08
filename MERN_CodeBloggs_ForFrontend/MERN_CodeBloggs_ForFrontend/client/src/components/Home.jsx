@@ -8,13 +8,13 @@ export default function Home() {
   const [userStats, setUserStats] = useState({ totalPosts: 0, lastPostDate: null, status: "" });
 
   // Get user initials
-let initials = "U";
-let userName = "";
-let userStatus = "";
+let initials = "Inistial";
+let userName = "UserName";
+let userStatus = "Status";
 if (cookies.user) {
   try {
-    const user_id = userObj && userObj._id ? userObj._id : undefined;
     const userObj = typeof cookies.user === "string" ? JSON.parse(cookies.user) : cookies.user;
+    const user_id = userObj && userObj._id ? userObj._id : undefined;
     const firstInitial = userObj.first_name?.[0]?.toUpperCase() || "";
     const lastInitial = userObj.last_name?.[0]?.toUpperCase() || "";
     initials = (firstInitial + lastInitial) || "U";
@@ -38,12 +38,11 @@ if (cookies.user) {
       }
     }
     fetchData();
-    // eslint-disable-next-line
   }, []);
 
   // Like handler
   const handleLike = async (postId, currentLikes) => {
-    await fetch(`http://localhost:5050/posts/${postId}`, {
+    await fetch(`http://localhost:5050/post/${postId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ likes: currentLikes + 1 }),
