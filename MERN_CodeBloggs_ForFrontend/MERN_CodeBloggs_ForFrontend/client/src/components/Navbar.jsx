@@ -9,11 +9,14 @@ export default function Header() {
   const [cookies, setCookie, removeCookie] = useCookies(["session_token", "user"]);
   const navigate = useNavigate();
   const [showToast, setShowToast] = useState(false);
+  const [postContent, setPostContent] = useState("");
+
 
   // Parse user name from cookie
   let userName = "User";
   if (cookies.user) {
     try {
+      const user_id = userObj && userObj._id ? userObj._id : undefined;
       const userObj = typeof cookies.user === "string" ? JSON.parse(cookies.user) : cookies.user;
       userName = userObj.first_name ? userObj.first_name : "User";
     } catch {
@@ -30,6 +33,26 @@ export default function Header() {
     removeCookie("user", { path: "/" });
     navigate("/login");
   };
+  const handlePost = async () => {
+    console.log("1:", postContent);
+  if (!postContent.trim()) return;
+  try {
+    await fetch("http://localhost:5050/post", {
+    
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        content: postContent,
+        user_id: user_id,
+      }),
+    });
+    setPostContent("");
+    setShowModal(false);
+    // Optionally: show a toast or refresh posts
+  } catch (e) {
+    // Optionally: handle error
+  }
+};
 
   return (
     <>
@@ -80,28 +103,33 @@ export default function Header() {
       </header>
 
       {/* Modal for Post */}
-      <Modal show={showModal} onHide={() => setShowModal(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title style={{width:"100%", textAlign:`center`}}>Blogg Something!</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <form>
-            <div className="mb-3">
-              <textarea className="form-control" id="postContent" rows="4" placeholder="Blogg Something!"></textarea>
-            </div>
-          </form>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowModal(false)}>
-            Close
-          </Button>
-          <Button variant="primary" onClick={() => setShowModal(false)}>
-            Post
-          </Button>
-        </Modal.Footer>
-      </Modal>
-
-      {/* Toast outside header, fixed position */}
+<Modal show={showModal} onHide={() => setShowModal(false)}>
+  <Modal.Header closeButton>
+    <Modal.Title style={{ width: "100%", textAlign: "center" }}>Blogg Something!</Modal.Title>
+  </Modal.Header>
+  <Modal.Body>
+    <form onSubmit={e => { e.preventDefault(); handlePost(); }}>
+      <div className="mb-3">
+        <textarea
+          className="form-control"
+          id="postContent"
+          rows="4"
+          placeholder="Blogg Something!"
+          value={postContent}
+          onChange={e => setPostContent(e.target.value)}
+        ></textarea>
+      </div>
+    </form>
+  </Modal.Body>
+  <Modal.Footer>
+    <Button variant="secondary" onClick={() => setShowModal(false)}>
+      Close
+    </Button>
+    <Button variant="primary" onClick={handlePost}>
+      Post
+    </Button>
+  </Modal.Footer>
+</Modal>      {/* Toast outside header, fixed position */}
       <Toast
         onClose={() => setShowToast(false)}
         show={showToast}
