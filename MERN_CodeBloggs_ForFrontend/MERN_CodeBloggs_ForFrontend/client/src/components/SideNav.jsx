@@ -12,16 +12,16 @@ export default function Sidebar() {
   }
 
   const linkClass =
-    "block p-2 rounded hover:bg-gray-100 transition-colors duration-150";
+    "btn btn-outline";
   const activeClass = "btn btn-primary";
 
   return (
-    <nav className="fixed top-0 left-0 h-full w-64 shadow-md flex flex-col p-4">
+    <nav className="flex flex-col h-full p-4 space-y-2">
       <ul className="flex-1 space-y-4">
         <li>
           <NavLink
             to="/home"
-            className={({ isActive }) =>
+            className={({ isActive}) =>
               isActive ? `${linkClass} ${activeClass}` : linkClass
             }
           >
@@ -30,7 +30,7 @@ export default function Sidebar() {
         </li>
         <li>
           <NavLink
-            to="/posts"
+            to="/bloggs"
             className={({ isActive }) =>
               isActive ? `${linkClass} ${activeClass}` : linkClass
             }

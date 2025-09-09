@@ -20,7 +20,7 @@ useEffect(() => {
       .then((res) => res.json())
       .then((data) => {
         if (data.status === "ok" && data.data.valid) {
-          navigate("/");
+          navigate("/home");
         } else {
           removeCookie("session_token", { path: "/" });
           removeCookie("user", { path: "/" });

@@ -6,6 +6,7 @@ export default function Home() {
   const [cookies] = useCookies(["user"]);
   const [posts, setPosts] = useState([]);
   const [userStats, setUserStats] = useState({ totalPosts: 0, lastPostDate: null, status: "" });
+  const [comments, setComments] = useState([]);
 
   // Get user initials
 let initials = "Inistial";
@@ -24,35 +25,60 @@ if (cookies.user) {
 }
 
   // Fetch posts (with comments)
-  useEffect(() => {
-    async function fetchData() {
-      const postsRes = await fetch("http://localhost:5050/posts");
-      const postsData = await postsRes.json();
-      setPosts(postsData.data || []);
-      if (postsData.data?.length) {
-        setUserStats({
-          totalPosts: postsData.data.length,
-          lastPostDate: postsData.data[0].createdAt,
-          status: userStatus,
-        });
-      }
-    }
-    fetchData();
-  }, []);
+useEffect(() => {
+  async function fetchData() {
+    const postsRes = await fetch("http://localhost:5050/posts");
+    const postsData = await postsRes.json();
+    const allPosts = postsData.data || [];
+    setPosts(allPosts);
 
-  // Like handler
-  const handleLike = async (postId, currentLikes) => {
-    await fetch(`http://localhost:5050/post/${postId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ likes: currentLikes + 1 }),
+    // get user id from cookie
+    const userObj = cookies.user
+      ? (typeof cookies.user === "string" ? JSON.parse(cookies.user) : cookies.user)
+      : null;
+    const user_id = userObj?._id || userObj?.id;
+
+    // filter only user’s posts
+    const userPosts = allPosts.filter(post => {
+      const postUserId = post.user?._id || post.user_id || post.user;
+      return String(postUserId) === String(user_id);
     });
-    setPosts(posts =>
-      posts.map(post =>
-        post._id === postId ? { ...post, likes: (post.likes || 0) + 1 } : post
-      )
-    );
-  };
+
+    if (userPosts.length) {
+      setUserStats({
+        totalPosts: userPosts.length,
+        lastPostDate: userPosts[0].createdAt,
+        status: userStatus,
+      });
+    } else {
+      setUserStats({
+        totalPosts: 0,
+        lastPostDate: null,
+        status: userStatus,
+      });
+    }
+    // Fetch comments
+    const commentsRes = await fetch("http://localhost:5050/comments");
+    const commentsData = await commentsRes.json();
+    setComments(commentsData.data || []);
+  }
+  fetchData();
+}, []);
+
+
+const handleLike = async (postId, currentLikes) => {
+  const res = await fetch(`http://localhost:5050/post/${postId}`, {
+    method: "PATCH", // <-- Use PATCH instead of PUT
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ likes: currentLikes + 1 }),
+  });
+  if (res.ok) {
+    // Refetch posts to get updated likes
+    const postsRes = await fetch("http://localhost:5050/posts");
+    const postsData = await postsRes.json();
+    setPosts(postsData.data || []);
+  }
+};
 
   return (
     <div className="max-w-2xl mx-auto mt-8">
@@ -71,35 +97,48 @@ if (cookies.user) {
       </div>
 
       {/* Posts */}
-      <div>
         <h2 className="text-xl font-bold mb-4">Posts</h2>
-        {posts.map(post => (
-          <div key={post._id} className="border rounded p-4 mb-4">
-            <div className="mb-2">{post.content}</div>
-            <div className="flex items-center justify-between text-sm text-gray-500">
-              <span>{new Date(post.createdAt).toLocaleString()}</span>
-              <span className="flex items-center space-x-2">
-                <button
-                  className="text-blue-500 hover:text-blue-700"
-                  onClick={() => handleLike(post._id, post.likes || 0)}
-                >
-                  <FaThumbsUp />
-                </button>
-                <span>{post.likes || 0}</span>
-              </span>
+          {posts
+          .filter(post => {
+            const userObj = cookies.user
+              ? (typeof cookies.user === "string" ? JSON.parse(cookies.user) : cookies.user)
+              : null;
+
+            const user_id = userObj?._id || userObj?.id;
+            if (!user_id) return false;
+
+            // normalize both sides to strings
+            const postUserId = post.user?._id || post.user_id || post.user;
+            return String(postUserId) === String(user_id);
+          })
+          .map(post => (
+            <div key={post._id} className="border rounded p-4 mb-4">
+              <div className="mb-2">{post.content}</div>
+              <div className="flex items-center justify-between text-sm text-gray-500">
+                <span>{new Date(post.createdAt).toLocaleString()}</span>
+                <span className="flex items-center space-x-2">
+                  <button
+                    className="text-blue-500 hover:text-blue-700"
+                    onClick={() => handleLike(post._id, post.likes || 0)}
+                  >
+                    <FaThumbsUp />
+                  </button>
+                  <span>{post.likes || 0}</span>
+                </span>
+              </div>
+              {/* Comments for this post */}
+              <div className="mt-3">
+                <div className="font-semibold text-sm mb-1">Comments:</div>
+                {comments
+                  .filter(comment => comment.post_id === post._id)
+                  .map(comment => (
+                    <div key={comment._id} className="ml-2 text-sm text-gray-700 border-l pl-2 mb-1">
+                      {comment.content} <span className="text-gray-400">({new Date(comment.createdAt).toLocaleString()})</span>
+                    </div>
+                  ))}
+              </div>
             </div>
-            {/* Comments for this post */}
-            <div className="mt-3">
-              <div className="font-semibold text-sm mb-1">Comments:</div>
-              {(post.comments || []).map(comment => (
-                <div key={comment._id} className="ml-2 text-sm text-gray-700 border-l pl-2 mb-1">
-                  {comment.content} <span className="text-gray-400">({new Date(comment.createdAt).toLocaleString()})</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
     </div>
   );
 }

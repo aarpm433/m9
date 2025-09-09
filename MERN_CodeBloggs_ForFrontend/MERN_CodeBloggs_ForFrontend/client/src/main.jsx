@@ -1,27 +1,42 @@
-import { StrictMode } from 'react';
-import { createRoot } from 'react-dom/client';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { CookiesProvider } from "react-cookie";
-import './index.css';
-import App from './App.jsx';
-import Login from "./components/Login.jsx";
-import Register from './components/Register.jsx';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import Home from './components/Home.jsx';
+import "./index.css";
+import "bootstrap/dist/css/bootstrap.min.css";
 
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
+import App from "./App.jsx";
+import Login from "./components/Login.jsx";
+import Register from "./components/Register.jsx";
+import Home from "./components/Home.jsx";
+import Bloggs from "./components/Bloggs.jsx";
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <App />,
+    children: [
+      { path: "home", element: <Home /> }, // ✅ no need for leading slash
+      { path: "settings", element: <h1>balls</h1> },
+      {path: "bloggs", element: <Bloggs /> },
+      {path: "Network", element: <div>Network Page (to be implemented)</div>},
+      {path: "Admin", element: <div>Admin Page (to be implemented)</div>},
+    ],
+  },
+  {
+    path: "/login",
+    element: <Login />,
+  },
+  {
+    path: "/register",
+    element: <Register />, // ✅ component must be capitalized
+  },
+]);
+
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <React.StrictMode>
     <CookiesProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<App />}>
-            <Route path="home" element={<Home />} />
-            <Route path="settings" element={<div>Settings Page (to be implemented)</div>} />
-          </Route>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-        </Routes>
-      </BrowserRouter>
+      <RouterProvider router={router} />
     </CookiesProvider>
-  </StrictMode>
+  </React.StrictMode>
 );

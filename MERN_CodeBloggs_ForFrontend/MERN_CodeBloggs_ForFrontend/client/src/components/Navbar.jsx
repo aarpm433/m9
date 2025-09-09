@@ -57,51 +57,53 @@ export default function Header() {
 
   return (
     <>
-      <header className="py-3 px-8 shadow bg-white w-full flex-nowrap">
-        {/* Left: Logo and Title */}
-        <div className="">
-          <NavLink to="/home">
-            <img
-              alt="CodeBloggs_logo"
-              src="/CBG.png"
-              style={{ height: "80px", width: "80px", objectFit: "contain" }}
-            />
-          </NavLink>
-            <img
-              alt="CodeBloggs_logo"
-              src="/CodeBloggs.png"
-              style={{ height: "200px", width: "200px", objectFit: "contain" }}
-            />        </div>
+<header className="py-3 px-8 shadow bg-white w-full flex items-center justify-between">
+  {/* Left: Logo and Title */}
+  <div className="flex items-center space-x-4">
+    <NavLink to="/home">
+      <img
+        alt="CodeBloggs_logo"
+        src="/CBG.png"
+        style={{ height: "50px", width: "50px", objectFit: "contain" }}
+      />
+    </NavLink>
+    <img
+      alt="CodeBloggs_logo"
+      src="/CodeBloggs.png"
+      style={{ height: "200px", width: "200px", objectFit: "contain" }}
+    />
+  </div>
 
-        {/* Right: Actions */}
-        <div className="">
-          <button className="btn btn-primary" onClick={() => setShowModal(true)}>
-            Post
+  {/* Right: Actions */}
+  <div className="flex items-center space-x-4">
+    <button className="btn btn-primary" onClick={() => setShowModal(true)}>
+      Post
+    </button>
+    <div className="relative">
+      <button onClick={() => setOpen(!open)} className="btn btn-secondary">
+        {userName} ▾
+      </button>
+      {open && (
+        <div className="absolute right-0 mt-2 flex flex-col space-y-2">
+          <button
+            className="btn btn-secondary"
+            onClick={() => {
+              setShowToast(true);
+              setOpen(false);
+              setTimeout(() => navigate("/settings"), 1000);
+            }}
+          >
+            Account Settings
           </button>
-          <div className="">
-            <button onClick={() => setOpen(!open)} className="btn btn-secondary">
-              {userName} ▾
-            </button>
-            {open && (
-              <div className="">
-                <button
-                  className="btn btn-secondary"
-                  onClick={() => {
-                    setShowToast(true);
-                    setOpen(false);
-                    setTimeout(() => navigate("/settings"), 1000);
-                  }}
-                >
-                  Account Settings
-                </button>
-                <button className="btn btn-secondary" onClick={handleLogout}>
-                  Logout
-                </button>
-              </div>
-            )}
-          </div>
+          <button className="btn btn-secondary" onClick={handleLogout}>
+            Logout
+          </button>
         </div>
-      </header>
+      )}
+    </div>
+  </div>
+</header>
+
 
       {/* Modal for Post */}
 <Modal show={showModal} onHide={() => setShowModal(false)}>
@@ -130,7 +132,7 @@ export default function Header() {
       Post
     </Button>
   </Modal.Footer>
-</Modal>      {/* Toast outside header, fixed position */}
+</Modal>
       <Toast
         onClose={() => setShowToast(false)}
         show={showToast}
