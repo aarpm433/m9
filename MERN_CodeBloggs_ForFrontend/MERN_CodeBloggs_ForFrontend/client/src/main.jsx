@@ -10,6 +10,8 @@ import Login from "./components/Login.jsx";
 import Register from "./components/Register.jsx";
 import Home from "./components/Home.jsx";
 import Bloggs from "./components/Bloggs.jsx";
+import AdminView from "./components/Admin.jsx";
+import Network from "./components/network.jsx";
 
 const router = createBrowserRouter([
   {
@@ -19,8 +21,8 @@ const router = createBrowserRouter([
       { path: "home", element: <Home /> }, // ✅ no need for leading slash
       { path: "settings", element: <h1>balls</h1> },
       {path: "bloggs", element: <Bloggs /> },
-      {path: "Network", element: <div>Network Page (to be implemented)</div>},
-      {path: "Admin", element: <div>Admin Page (to be implemented)</div>},
+      {path: "Network", element: <Network/>},
+      {path: "Admin", element: <AdminView/>},
     ],
   },
   {
