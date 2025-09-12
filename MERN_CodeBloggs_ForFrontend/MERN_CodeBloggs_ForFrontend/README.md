@@ -91,18 +91,41 @@ status:"ok",
 None
 
 #### What, if any, ACTIONS is this wireframe responsible for?
+The login Wireframe has 2 buttons, are login button, and a link to redirect towards, the register page. The login buttons fetches logs you in while creating a session, since if you need to log in, it is without an active session.
 
-
+POST /session/login
+Parameters Name
+Body       email,password 
+Sample Response:
+{
+    "id": "68b769fe5fdf07261272770c",
+    "first_name": "Aaron",
+    "last_name": "snow",
+    "auth_level": "admin",
+    "status": "J'aime la neige!"
+}
 ```
-
 ```
 ---
 
 ## CodeBlogg - Register
 
 #### What, if any DATA is required from the backend to render the wireframe?
+None
 
 #### What, if any, ACTIONS is this wireframe responsible for?
+This Wireframe is responsible for creating an account to use this platform
+POST /user/register 
+Parameters Name
+Body       email,password, userData
+Sample Response:
+{
+    "status": "ok",
+    "data": {
+        "id": "68c432d5ea3fa6f196780c76"
+    },
+    "message": "User created successfully"
+}
 
 ```
 
@@ -112,8 +135,18 @@ None
 ## CodeBlogg - Base Frames and dropdown
 
 #### What, if any DATA is required from the backend to render the wireframe?
+UserName is required from backend to display on the menu dropdown 
 
 #### What, if any, ACTIONS is this wireframe responsible for?
+This Wireframe is responsible for both logging out and redirecting towards the account settings page. 
+POST /session/logout 
+Parameters Name
+Query      token
+Sample Response 
+{
+  Status: "ok",
+  "message" : "successfully logged out"
+}
 
 ```
 
@@ -123,9 +156,27 @@ None
 ## CodeBlogg - Post Modal
 
 #### What, if any DATA is required from the backend to render the wireframe?
+No data is required to render the Modal 
 
 #### What, if any, ACTIONS is this wireframe responsible for?
-
+This modal is responsible for making and posting information onto the website.
+POST /post
+Parameters Name 
+Body       content, user_id, likes
+Sample Response
+{            
+  status: 'ok',
+  data: 
+  {
+    _id: 32498534756897346,
+    content: "hi",
+    user_id: 3498573498593876,
+    likes: "0"",
+    createdAt: 0000-00-00,
+    comments: []
+  },
+  message: 'Post created successfully'   
+}
 ```
 
 ```
@@ -134,8 +185,44 @@ None
 ## Main - User View
 
 #### What, if any DATA is required from the backend to render the wireframe?
-
+You need to access posts and user information such as username, status, and more
 #### What, if any, ACTIONS is this wireframe responsible for?
+This Wireframe is responsible for displaying information vital to the browsing experience of the user. The Initials, user status, user information and user posts are all reunited in a single page for easy access
+GET /posts
+Parameters Name
+Sample Reponse:
+{
+    "status": "ok",
+    "data": [
+        {
+            "_id": "68bc4ee18e243f691ade012c",
+            "content": "balls",
+            "user_id": "68b769fe5fdf07261272770c",
+            "likes": 4,
+            "createdAt": "2025-09-06T15:10:25.534Z",
+            "comments": [
+                {
+                    "_id": "68c0349e2f8db55aeaa0c968",
+                    "content": "is this a banger",
+                    "post_id": "68bc4ee18e243f691ade012c",
+                    "user_id": "68b99ba6603961e84e804d47",
+                    "likes": 0,
+                    "createdAt": "2025-09-09T14:07:26.587Z",
+                    "updatedAt": "2025-09-09T14:07:26.587Z"
+                }
+            ]
+        },
+        {
+            "_id": "68bc57fc8e243f691ade012d",
+            "content": "67",
+            "user_id": "68b99ba6603961e84e804d47",
+            "likes": 67,
+            "createdAt": "2025-09-06T15:49:16.311Z",
+            "comments": []
+        },
+    ],
+    "message": "Posts retrieved successfully"
+}
 
 ```
 
@@ -145,9 +232,28 @@ None
 ## Main - Bloggs View
 
 #### What, if any DATA is required from the backend to render the wireframe?
+Bloggs information and user information
+Get POST (same as above)
 
 #### What, if any, ACTIONS is this wireframe responsible for?
-
+you can like posts here
+PATCH /post/:id
+Parameters
+params id
+body content, user_id, likes
+Sample Response:
+{
+    "status": "ok",
+    "data": {
+        "_id": "68bc4ee18e243f691ade012c",
+        "content": "balls",
+        "user_id": "68b769fe5fdf07261272770c",
+        "likes": 67,
+        "createdAt": "2025-09-06T15:10:25.534Z",
+        "comments": []
+    },
+    "message": "Post updated successfully"
+}
 ```
 
 ```
@@ -156,9 +262,42 @@ None
 ## Main - Network View
 
 #### What, if any DATA is required from the backend to render the wireframe?
-
+User information
+GET /users
+{
+    "status": "ok",
+    "data": [
+        {
+            "_id": "68b769fe5fdf07261272770c",
+            "first_name": "Aaron",
+            "last_name": "snow",
+            "birthday": "2013-05-12",
+            "status": "J'aime la neige!",
+            "location": "North",
+            "occupation": "King",
+            "auth_level": "admin",
+            "email": "123@123.com",
+            "createdAt": "2025-09-02T22:04:46.086Z",
+            "updatedAt": "2025-09-02T22:04:46.086Z"
+        },
+        {
+            "_id": "68b99ba6603961e84e804d47",
+            "first_name": "Aaron",
+            "last_name": "Calkins",
+            "birthday": "2007-01-26",
+            "occupation": "Student",
+            "location": "At home",
+            "auth_level": "basic",
+            "status": "penuts",
+            "email": "mewhewn@gmail.com",
+            "createdAt": "2025-09-04T14:01:10.327Z",
+            "updatedAt": "2025-09-04T14:01:10.327Z"
+        },
+    ],
+    "message": "Users retrieved successfully"
+}
 #### What, if any, ACTIONS is this wireframe responsible for?
-
+None
 ```
 
 ```
@@ -167,8 +306,9 @@ None
 ## Main Admin view
 
 #### What, if any DATA is required from the backend to render the wireframe?
-
+It needs to check if a user is admin auth or not
 #### What, if any, ACTIONS is this wireframe responsible for?
+No actions yet
 
 ```
 
@@ -177,8 +317,11 @@ None
 ## CodeBlogg - Admin view
 
 #### What, if any DATA is required from the backend to render the wireframe?
+The information needed is whether the user has admin authorization 
 
 #### What, if any, ACTIONS is this wireframe responsible for?
+This wireframe is useful for managing content and user information from one single location making it conveniant and accessible 
+
 
 ```
 
