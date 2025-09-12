@@ -15,12 +15,14 @@ export default function Login() {
 useEffect(() => {
   let timeout = setTimeout(() => setLoading(false), 5000); // fallback
   const token = cookies.session_token;
-  if (token) {
+  const user = cookies.user;
+
+  if (token && user) {
     fetch(`http://localhost:5050/validate_token?token=${token}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.status === "ok" && data.data.valid) {
-          navigate("/");
+          navigate("/home");
         } else {
           removeCookie("session_token", { path: "/" });
           removeCookie("user", { path: "/" });
@@ -34,11 +36,15 @@ useEffect(() => {
       })
       .finally(() => setLoading(false));
   } else {
+    removeCookie("session_token", { path: "/" });
+    removeCookie("user", { path: "/" });
     setShowForm(true);
     setLoading(false);
   }
+
   return () => clearTimeout(timeout);
-}, [cookies.session_token, navigate, removeCookie]);
+}, [cookies.session_token, cookies.user, navigate, removeCookie]);
+
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });

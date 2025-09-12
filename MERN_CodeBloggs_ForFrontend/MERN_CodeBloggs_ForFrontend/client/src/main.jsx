@@ -1,27 +1,54 @@
-import { StrictMode } from 'react';
-import { createRoot } from 'react-dom/client';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { CookiesProvider } from "react-cookie";
-import './index.css';
-import App from './App.jsx';
-import Login from "./components/Login.jsx";
-import Register from './components/Register.jsx';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import Home from './components/Home.jsx';
+import "./index.css";
+import "bootstrap/dist/css/bootstrap.min.css";
 
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
+import App from "./App.jsx";
+import Login from "./components/Login.jsx";
+import Register from "./components/Register.jsx";
+import Home from "./components/Home.jsx";
+import Bloggs from "./components/Bloggs.jsx";
+import AdminView from "./components/Admin.jsx";
+import Network from "./components/network.jsx";
+import { AuthProvider } from "./components/AuthContext.jsx";
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
+
+const router = createBrowserRouter([
+  {
+    element: <ProtectedRoute />,
+    children: [
+      {
+        path: "/",
+        element: <App />,
+        children: [
+          { path: "home", element: <Home /> },
+          { path: "settings", element: <h1>under construction</h1> },
+          { path: "bloggs", element: <Bloggs /> },
+          { path: "network", element: <Network /> },
+          { path: "admin", element: <AdminView /> },
+        ],
+      },
+    ],
+  },
+  {
+    path: "/login",
+    element: <Login />,
+  },
+  {
+    path: "/register",
+    element: <Register />,
+  },
+]);
+
+
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <React.StrictMode>
     <CookiesProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<App />}>
-            <Route path="home" element={<Home />} />
-            <Route path="settings" element={<div>Settings Page (to be implemented)</div>} />
-          </Route>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-        </Routes>
-      </BrowserRouter>
+      <AuthProvider>
+        <RouterProvider router={router} />
+      </AuthProvider>
     </CookiesProvider>
-  </StrictMode>
+  </React.StrictMode>
 );
