@@ -1,15 +1,16 @@
 import { useCookies } from "react-cookie";
 import { useEffect, useState } from "react";
 import { FaThumbsUp } from "react-icons/fa";
-import { Card, Button, Badge } from "react-bootstrap";
+import { Card, Button, Form } from "react-bootstrap";
 
 export default function Home() {
   const [cookies] = useCookies(["user"]);
   const [posts, setPosts] = useState([]);
   const [userStats, setUserStats] = useState({ totalPosts: 0, lastPostDate: null, status: "" });
   const [comments, setComments] = useState([]);
+  const [likedPosts, setLikedPosts] = useState([]); 
+  const [commentInputs, setCommentInputs] = useState({}); // Track input per post
 
-  // Get user info
   let initials = "U";
   let userName = "UserName";
   let userStatus = "Status";
@@ -29,13 +30,11 @@ export default function Home() {
 
   useEffect(() => {
     async function fetchData() {
-      // Fetch posts
       const postsRes = await fetch("http://localhost:5050/posts");
       const postsData = await postsRes.json();
       const allPosts = postsData.data || [];
       setPosts(allPosts);
 
-      // Filter user posts for stats
       const userPosts = allPosts.filter(post => {
         const postUserId = post.user?._id || post.user_id || post.user;
         return String(postUserId) === String(userId);
@@ -47,7 +46,6 @@ export default function Home() {
         status: userStatus,
       });
 
-      // Fetch comments
       const commentsRes = await fetch("http://localhost:5050/comments");
       const commentsData = await commentsRes.json();
       setComments(commentsData.data || []);
@@ -57,16 +55,46 @@ export default function Home() {
   }, [userId, userStatus, cookies.user]);
 
   const handleLike = async (postId, currentLikes) => {
+    const isLiked = likedPosts.includes(postId);
+    const updatedLikes = isLiked ? currentLikes - 1 : currentLikes + 1;
+
     const res = await fetch(`http://localhost:5050/post/${postId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ likes: currentLikes + 1 }),
+      body: JSON.stringify({ likes: updatedLikes }),
     });
 
     if (res.ok) {
-      const postsRes = await fetch("http://localhost:5050/posts");
-      const postsData = await postsRes.json();
-      setPosts(postsData.data || []);
+      setLikedPosts(prev =>
+        isLiked ? prev.filter(id => id !== postId) : [...prev, postId]
+      );
+
+      setPosts(prevPosts =>
+        prevPosts.map(post =>
+          post._id === postId ? { ...post, likes: updatedLikes } : post
+        )
+      );
+    }
+  };
+
+  const handleCommentChange = (postId, value) => {
+    setCommentInputs(prev => ({ ...prev, [postId]: value }));
+  };
+
+  const handleCommentSubmit = async (postId) => {
+    const content = commentInputs[postId];
+    if (!content) return;
+
+    const res = await fetch("http://localhost:5050/comment", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ post_id: postId, content, user_id: userId }),
+    });
+
+    if (res.ok) {
+      const newComment = await res.json();
+      setComments(prev => [...prev, newComment.data]);
+      setCommentInputs(prev => ({ ...prev, [postId]: "" }));
     }
   };
 
@@ -93,52 +121,65 @@ export default function Home() {
       {/* Posts */}
       <h2 className="mb-3">Posts</h2>
       {posts
-        .filter(post => {
-          const postUserId = post.user?._id || post.user_id || post.user;
-          return String(postUserId) === String(userId);
-        })
+        .filter(post => String(post.user?._id || post.user_id || post.user) === String(userId))
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-        .map(post => (
-          <Card className="mb-3" key={post._id}>
-            <Card.Body>
-              <Card.Text>{post.content}</Card.Text>
-                <div className="d-flex justify-content-between align-items-center small text-muted">
+        .map(post => {
+          const isLiked = likedPosts.includes(post._id);
+          return (
+            <Card className="mb-3" key={post._id}>
+              <Card.Body>
+                <Card.Text>{post.content}</Card.Text>
+
+                <div className="d-flex justify-content-between align-items-center small text-muted mb-2">
                   <span>{new Date(post.createdAt).toLocaleString()}</span>
-                  <span className="d-flex align-items-center">
-                    <Button
-                      size="sm"
-                      className="d-flex align-items-center"
-                      style={{
-                        backgroundColor: "#6E6AB8",
-                        borderColor: "#B1ADFF",
-                        color: "#fff",
-                      }}
-                      onClick={() => handleLike(post._id, post.likes || 0)}
-                    >
-                      <FaThumbsUp className="me-1" />
-                      {post.likes || 0}
-                    </Button>
-                  </span>
+                  <Button
+                    size="sm"
+                    className="d-flex align-items-center"
+                    style={{
+                      backgroundColor: isLiked ? "#6E6AB8" : "#fff",
+                      borderColor: "#B1ADFF",
+                      color: isLiked ? "#fff" : "#6E6AB8",
+                    }}
+                    onClick={() => handleLike(post._id, post.likes || 0)}
+                  >
+                    <FaThumbsUp className="me-1" />
+                    {post.likes || 0}
+                  </Button>
                 </div>
 
+                {/* Comments */}
+                <div className="mt-3">
+                  <div className="fw-semibold mb-1">Comments:</div>
+                  {comments
+                    .filter(comment => comment.post_id === post._id)
+                    .map(comment => (
+                      <div key={comment._id} className="ms-3 border-start ps-2 mb-2">
+                        {comment.content}{" "}
+                        <span className="text-muted" style={{ fontSize: "0.8rem" }}>
+                          ({new Date(comment.createdAt).toLocaleString()})
+                        </span>
+                      </div>
+                    ))}
 
-              {/* Comments */}
-              <div className="mt-3">
-                <div className="fw-semibold mb-1">Comments:</div>
-                {comments
-                  .filter(comment => comment.post_id === post._id)
-                  .map(comment => (
-                    <div key={comment._id} className="ms-3 border-start ps-2 mb-2">
-                      {comment.content}{" "}
-                      <span className="text-muted" style={{ fontSize: "0.8rem" }}>
-                        ({new Date(comment.createdAt).toLocaleString()})
-                      </span>
-                    </div>
-                  ))}
-              </div>
-            </Card.Body>
-          </Card>
-        ))}
+                  <Form.Control
+                    type="text"
+                    placeholder="Add a comment..."
+                    value={commentInputs[post._id] || ""}
+                    onChange={(e) => handleCommentChange(post._id, e.target.value)}
+                    className="mt-2"
+                  />
+                  <Button
+                    size="sm"
+                    className="mt-2"
+                    onClick={() => handleCommentSubmit(post._id)}
+                  >
+                    Comment
+                  </Button>
+                </div>
+              </Card.Body>
+            </Card>
+          );
+        })}
     </div>
   );
 }

@@ -17,7 +17,7 @@ export default function Sidebar() {
   const activeClass = "btn btn-primary w-100 text-start";
 
   return (
-    <Nav className="d-flex flex-column p-3 vh-100" style={{ gap: "0.5rem" }}>
+    <Nav className="d-flex flex-column p-3 vh-100" style={{ gap: "0.5rem", backgroundColor: "#D3D1EE" }}>
       <Nav.Item>
         <NavLink
           to="/home"

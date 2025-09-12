@@ -52,16 +52,17 @@ export default function Header() {
   return (
     <>
       {/* Navbar */}
-      <Navbar bg="light" expand="lg" className="shadow-sm mb-3">
+      <Navbar expand="lg" className="shadow-sm mb-3" style={{ backgroundColor: "#D3D1EE" }}>
         <Container>
-          <Navbar.Brand as={NavLink} to="/home">
-            <img src="/CBG.png" alt="Logo" width={50} height={50} className="d-inline-block align-top" />
-            <img src="/CodeBloggs.png" alt="Brand" width={200} height={50} className="d-inline-block align-top ms-2" />
+          <Navbar.Brand as={NavLink} to="/home" className="d-flex align-items-center">
+            <img src="/CBG.png" alt="Logo" width={50} height={50} className="d-inline-block" />
+            <img src="/CodeBloggs.png" alt="Brand" width={200} height={50} className="d-inline-block ms-2" />
           </Navbar.Brand>
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse id="basic-navbar-nav" className="justify-content-end">
             <Nav className="align-items-center">
               <Button
+                size = "lg"
                 className="me-2"
                 style={{ backgroundColor: "#B1ADFF", borderColor: "#8f8af5ff", color: "#fff" }}
                 onClick={() => setShowModal(true)}
@@ -69,7 +70,7 @@ export default function Header() {
                 Post
               </Button>
               <Dropdown show={open} onToggle={() => setOpen(!open)}>
-                <Dropdown.Toggle variant="secondary" id="dropdown-user">
+                <Dropdown.Toggle variant="secondary" id="dropdown-user" size = "lg">
                   {userName} 
                 </Dropdown.Toggle>
                 <Dropdown.Menu align="end">
