@@ -1,6 +1,7 @@
 import { useCookies } from "react-cookie";
 import { useEffect, useState } from "react";
 import { FaThumbsUp } from "react-icons/fa";
+import { Card, Button, Badge } from "react-bootstrap";
 
 export default function Home() {
   const [cookies] = useCookies(["user"]);
@@ -8,137 +9,136 @@ export default function Home() {
   const [userStats, setUserStats] = useState({ totalPosts: 0, lastPostDate: null, status: "" });
   const [comments, setComments] = useState([]);
 
-  // Get user initials
-let initials = "Inistial";
-let userName = "UserName";
-let userStatus = "Status";
-if (cookies.user) {
-  try {
-    const userObj = typeof cookies.user === "string" ? JSON.parse(cookies.user) : cookies.user;
-    const user_id = userObj && userObj._id ? userObj._id : undefined;
-    const firstInitial = userObj.first_name?.[0]?.toUpperCase() || "";
-    const lastInitial = userObj.last_name?.[0]?.toUpperCase() || "";
-    initials = (firstInitial + lastInitial) || "U";
-    userName = `${userObj.first_name || ""} ${userObj.last_name || ""}`.trim();
-    userStatus = userObj.status || "active";
-  } catch {}
-}
+  // Get user info
+  let initials = "U";
+  let userName = "UserName";
+  let userStatus = "Status";
+  let userId = null;
 
-  // Fetch posts (with comments)
-useEffect(() => {
-  async function fetchData() {
-    const postsRes = await fetch("http://localhost:5050/posts");
-    const postsData = await postsRes.json();
-    const allPosts = postsData.data || [];
-    setPosts(allPosts);
+  if (cookies.user) {
+    try {
+      const userObj = typeof cookies.user === "string" ? JSON.parse(cookies.user) : cookies.user;
+      userId = userObj._id || userObj.id;
+      const firstInitial = userObj.first_name?.[0]?.toUpperCase() || "";
+      const lastInitial = userObj.last_name?.[0]?.toUpperCase() || "";
+      initials = firstInitial + lastInitial || "U";
+      userName = `${userObj.first_name || ""} ${userObj.last_name || ""}`.trim();
+      userStatus = userObj.status || "active";
+    } catch {}
+  }
 
-    // get user id from cookie
-    const userObj = cookies.user
-      ? (typeof cookies.user === "string" ? JSON.parse(cookies.user) : cookies.user)
-      : null;
-    const user_id = userObj?._id || userObj?.id;
+  useEffect(() => {
+    async function fetchData() {
+      // Fetch posts
+      const postsRes = await fetch("http://localhost:5050/posts");
+      const postsData = await postsRes.json();
+      const allPosts = postsData.data || [];
+      setPosts(allPosts);
 
-    // filter only user’s posts
-    const userPosts = allPosts.filter(post => {
-      const postUserId = post.user?._id || post.user_id || post.user;
-      return String(postUserId) === String(user_id);
-    });
+      // Filter user posts for stats
+      const userPosts = allPosts.filter(post => {
+        const postUserId = post.user?._id || post.user_id || post.user;
+        return String(postUserId) === String(userId);
+      });
 
-    if (userPosts.length) {
       setUserStats({
         totalPosts: userPosts.length,
-        lastPostDate: userPosts[0].createdAt,
+        lastPostDate: userPosts[0]?.createdAt || null,
         status: userStatus,
       });
-    } else {
-      setUserStats({
-        totalPosts: 0,
-        lastPostDate: null,
-        status: userStatus,
-      });
+
+      // Fetch comments
+      const commentsRes = await fetch("http://localhost:5050/comments");
+      const commentsData = await commentsRes.json();
+      setComments(commentsData.data || []);
     }
-    // Fetch comments
-    const commentsRes = await fetch("http://localhost:5050/comments");
-    const commentsData = await commentsRes.json();
-    setComments(commentsData.data || []);
-  }
-  fetchData();
-}, []);
 
+    fetchData();
+  }, [userId, userStatus, cookies.user]);
 
-const handleLike = async (postId, currentLikes) => {
-  const res = await fetch(`http://localhost:5050/post/${postId}`, {
-    method: "PATCH", // <-- Use PATCH instead of PUT
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ likes: currentLikes + 1 }),
-  });
-  if (res.ok) {
-    // Refetch posts to get updated likes
-    const postsRes = await fetch("http://localhost:5050/posts");
-    const postsData = await postsRes.json();
-    setPosts(postsData.data || []);
-  }
-};
+  const handleLike = async (postId, currentLikes) => {
+    const res = await fetch(`http://localhost:5050/post/${postId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ likes: currentLikes + 1 }),
+    });
+
+    if (res.ok) {
+      const postsRes = await fetch("http://localhost:5050/posts");
+      const postsData = await postsRes.json();
+      setPosts(postsData.data || []);
+    }
+  };
 
   return (
-    <div className="max-w-2xl mx-auto mt-8">
+    <div className="container my-4">
       {/* User Info */}
-      <div className="flex items-center space-x-4 mb-6">
-        <div className="w-16 h-16 rounded-full bg-blue-500 flex items-center justify-center text-2xl font-bold">
+      <div className="d-flex align-items-center mb-4">
+        <div
+          className="rounded-circle d-flex justify-content-center align-items-center text-white fw-bold me-3"
+          style={{ width: "60px", height: "60px", fontSize: "1.5rem", backgroundColor: "#B1ADFF" }}
+        >
           {initials}
         </div>
         <div>
-          <div className="text-gray-600">{userStatus}</div>
-          <div className="font-bold text-lg">{userName}</div>
-          <div className="text-sm text-gray-500">
-            Posts: {userStats.totalPosts} | Last post: {userStats.lastPostDate ? new Date(userStats.lastPostDate).toLocaleDateString() : "N/A"}
+          <div className="text-muted">{userStatus}</div>
+          <div className="fw-bold fs-5">{userName}</div>
+          <div className="text-muted">
+            Posts: {userStats.totalPosts} | Last post:{" "}
+            {userStats.lastPostDate ? new Date(userStats.lastPostDate).toLocaleDateString() : "N/A"}
           </div>
         </div>
       </div>
 
       {/* Posts */}
-        <h2 className="text-xl font-bold mb-4">Posts</h2>
-          {posts
-          .filter(post => {
-            const userObj = cookies.user
-              ? (typeof cookies.user === "string" ? JSON.parse(cookies.user) : cookies.user)
-              : null;
+      <h2 className="mb-3">Posts</h2>
+      {posts
+        .filter(post => {
+          const postUserId = post.user?._id || post.user_id || post.user;
+          return String(postUserId) === String(userId);
+        })
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .map(post => (
+          <Card className="mb-3" key={post._id}>
+            <Card.Body>
+              <Card.Text>{post.content}</Card.Text>
+                <div className="d-flex justify-content-between align-items-center small text-muted">
+                  <span>{new Date(post.createdAt).toLocaleString()}</span>
+                  <span className="d-flex align-items-center">
+                    <Button
+                      size="sm"
+                      className="d-flex align-items-center"
+                      style={{
+                        backgroundColor: "#6E6AB8",
+                        borderColor: "#B1ADFF",
+                        color: "#fff",
+                      }}
+                      onClick={() => handleLike(post._id, post.likes || 0)}
+                    >
+                      <FaThumbsUp className="me-1" />
+                      {post.likes || 0}
+                    </Button>
+                  </span>
+                </div>
 
-            const user_id = userObj?._id || userObj?.id;
-            if (!user_id) return false;
 
-            // normalize both sides to strings
-            const postUserId = post.user?._id || post.user_id || post.user;
-            return String(postUserId) === String(user_id);
-          })
-          .map(post => (
-            <div key={post._id} className="border rounded p-4 mb-4">
-              <div className="mb-2">{post.content}</div>
-              <div className="flex items-center justify-between text-sm text-gray-500">
-                <span>{new Date(post.createdAt).toLocaleString()}</span>
-                <span className="flex items-center space-x-2">
-                  <button
-                    className="text-blue-500 hover:text-blue-700"
-                    onClick={() => handleLike(post._id, post.likes || 0)}
-                  >
-                    <FaThumbsUp />
-                  </button>
-                  <span>{post.likes || 0}</span>
-                </span>
-              </div>
-              {/* Comments for this post */}
+              {/* Comments */}
               <div className="mt-3">
-                <div className="font-semibold text-sm mb-1">Comments:</div>
+                <div className="fw-semibold mb-1">Comments:</div>
                 {comments
                   .filter(comment => comment.post_id === post._id)
                   .map(comment => (
-                    <div key={comment._id} className="ml-2 text-sm text-gray-700 border-l pl-2 mb-1">
-                      {comment.content} <span className="text-gray-400">({new Date(comment.createdAt).toLocaleString()})</span>
+                    <div key={comment._id} className="ms-3 border-start ps-2 mb-2">
+                      {comment.content}{" "}
+                      <span className="text-muted" style={{ fontSize: "0.8rem" }}>
+                        ({new Date(comment.createdAt).toLocaleString()})
+                      </span>
                     </div>
                   ))}
               </div>
-            </div>
-          ))}
+            </Card.Body>
+          </Card>
+        ))}
     </div>
   );
 }

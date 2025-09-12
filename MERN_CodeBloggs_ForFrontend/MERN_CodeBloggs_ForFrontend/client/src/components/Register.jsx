@@ -111,7 +111,7 @@ export default function Register() {
           value={form.birthday}
           onChange={handleChange}
           className="form-control"
-          placeholder="Enter your birthday"
+          placeholder="0000-00-00"
           required
         />
     </div>

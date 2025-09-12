@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Card, Row, Col, Badge } from "react-bootstrap";
 
 export default function Network() {
   const [users, setUsers] = useState([]);
@@ -6,11 +7,9 @@ export default function Network() {
 
   useEffect(() => {
     async function fetchData() {
-      // Fetch users
       const usersRes = await fetch("http://localhost:5050/users");
       const usersData = await usersRes.json();
 
-      // Fetch posts
       const postsRes = await fetch("http://localhost:5050/posts");
       const postsData = await postsRes.json();
 
@@ -30,44 +29,54 @@ export default function Network() {
   const getLastPost = (userId) => {
     const userPosts = posts.filter(p => p.user_id === userId);
     if (userPosts.length === 0) return null;
-    // Sort by date and take latest
-    const lastPost = userPosts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
-    return lastPost;
+    return userPosts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
   };
 
   return (
-    <div className="max-w-5xl mx-auto mt-10 grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-      {users.map(user => {
-        const lastPost = getLastPost(user._id);
-        return (
-          <div key={user._id} className="border rounded-lg shadow-md p-4">
-            {/* User Header */}
-            <div className="flex items-center space-x-3 mb-4">
-              <div className="w-12 h-12 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold">
-                {getInitials(user)}
-              </div>
-              <div>
-                <div className="font-semibold">{user.first_name} {user.last_name}</div>
-                <div className="text-sm text-gray-500">{user.email}</div>
-                <div className="text-xs text-gray-400">Status: {user.status}</div>
-              </div>
-            </div>
+    <div className="container mt-4">
+      <Row xs={1} md={2} lg={3} className="g-4">
+        {users.map(user => {
+          const lastPost = getLastPost(user._id);
+          return (
+            <Col key={user._id}>
+              <Card className="h-100 shadow-sm">
+                <Card.Body>
+                  {/* User Header */}
+                  <div className="d-flex align-items-center mb-3">
+                    <div
+                      className="rounded-circle  text-white d-flex justify-content-center align-items-center me-3"
+                      style={{ width: "48px", height: "48px", fontWeight: "bold", backgroundColor: "#B1ADFF" }}
+                    >
+                      {getInitials(user)}
+                    </div>
+                    <div>
+                      <div className="fw-semibold">{user.first_name} {user.last_name}</div>
+                      <div className="text-muted small">{user.email}</div>
+                      <Badge bg={user.status === "active" ? "success" : "secondary"} className="mt-1">
+                        {user.status}
+                      </Badge>
+                    </div>
+                  </div>
 
-            {/* Last Post */}
-            {lastPost ? (
-              <div className="text-sm text-gray-700 border-t pt-2">
-                <span className="font-semibold">Last Post:</span>
-                <p className="mt-1">{lastPost.content}</p>
-                <span className="text-xs text-gray-400">
-                  {new Date(lastPost.createdAt).toLocaleString()}
-                </span>
-              </div>
-            ) : (
-              <div className="text-sm text-gray-400 border-t pt-2">No posts yet</div>
-            )}
-          </div>
-        );
-      })}
+                  {/* Last Post */}
+                  <hr />
+                  {lastPost ? (
+                    <div>
+                      <div className="fw-semibold mb-1">Last Post:</div>
+                      <p className="mb-1">{lastPost.content}</p>
+                      <div className="text-muted small">
+                        {new Date(lastPost.createdAt).toLocaleString()}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-muted small">No posts yet</div>
+                  )}
+                </Card.Body>
+              </Card>
+            </Col>
+          );
+        })}
+      </Row>
     </div>
   );
 }

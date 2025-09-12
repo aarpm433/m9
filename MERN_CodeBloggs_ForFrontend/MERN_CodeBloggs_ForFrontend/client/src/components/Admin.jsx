@@ -1,5 +1,5 @@
 import { useCookies } from "react-cookie";
-import { Card } from "react-bootstrap";
+import { Card, Row, Col, Container } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 
@@ -8,7 +8,6 @@ export default function AdminView() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Parse cookie (in case it's a string)
     const userObj =
       typeof cookies.user === "string" ? JSON.parse(cookies.user) : cookies.user;
 
@@ -18,22 +17,28 @@ export default function AdminView() {
   }, [cookies, navigate]);
 
   return (
-    <div className="max-w-4xl mx-auto mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
-      {/* User Manager */}
-      <Card className="shadow-md rounded-lg p-4">
-        <Card.Body>
-          <Card.Title>User Manager</Card.Title>
-          <Card.Text>Manage users here.</Card.Text>
-        </Card.Body>
-      </Card>
+    <Container className="mt-5">
+      <Row xs={1} md={2} className="g-4">
+        {/* User Manager */}
+        <Col>
+          <Card className="shadow-sm h-100">
+            <Card.Body>
+              <Card.Title>User Manager</Card.Title>
+              <Card.Text>Manage users here.</Card.Text>
+            </Card.Body>
+          </Card>
+        </Col>
 
-      {/* Content Manager */}
-      <Card className="shadow-md rounded-lg p-4">
-        <Card.Body>
-          <Card.Title>Content Manager</Card.Title>
-          <Card.Text>Manage blog posts, comments, and media here.</Card.Text>
-        </Card.Body>
-      </Card>
-    </div>
+        {/* Content Manager */}
+        <Col>
+          <Card className="shadow-sm h-100">
+            <Card.Body>
+              <Card.Title>Content Manager</Card.Title>
+              <Card.Text>Manage blog posts, comments, and media here.</Card.Text>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+    </Container>
   );
 }

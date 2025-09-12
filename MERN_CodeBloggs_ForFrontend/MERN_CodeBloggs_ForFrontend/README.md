@@ -12,7 +12,7 @@
 
 
 - NPM install in /client folder
-- `npm start` in /client folder to start the client side
+- `npm run dev` in /client folder to start the client side
 ---
 
 ## Color Palette
@@ -88,8 +88,10 @@ status:"ok",
 ## CodeBlogg - Login
 
 #### What, if any DATA is required from the backend to render the wireframe?
+None
 
 #### What, if any, ACTIONS is this wireframe responsible for?
+
 
 ```
 
