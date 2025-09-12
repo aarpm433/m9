@@ -35,10 +35,13 @@ export default function Home() {
       const allPosts = postsData.data || [];
       setPosts(allPosts);
 
-      const userPosts = allPosts.filter(post => {
-        const postUserId = post.user?._id || post.user_id || post.user;
-        return String(postUserId) === String(userId);
-      });
+      const userPosts = allPosts
+        .filter(post => {
+          const postUserId = post.user?._id || post.user_id || post.user;
+          return String(postUserId) === String(userId);
+        })
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // newest first
+
 
       setUserStats({
         totalPosts: userPosts.length,

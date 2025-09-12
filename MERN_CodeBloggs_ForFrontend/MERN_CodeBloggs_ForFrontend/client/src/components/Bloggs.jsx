@@ -95,6 +95,9 @@ export default function Bloggs() {
   };
 
   return (
+    // user info
+    // nothing there
+    // posts list
     <div className="container my-4">
       <h2 className="mb-4">Posts</h2>
       {posts
