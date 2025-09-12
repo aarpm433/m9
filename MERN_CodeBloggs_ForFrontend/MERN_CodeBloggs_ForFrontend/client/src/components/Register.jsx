@@ -142,6 +142,7 @@ export default function Register() {
       {error && <Alert variant="danger">{error}</Alert>}
 
       <button type="submit" className="btn btn-primary w-100">Register</button>
+      <a href="/login" className="d-block text-center mt-3">Already have an account? Login here.</a>
     </form>
   );
 }
