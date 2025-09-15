@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Form, Button, Alert } from "react-bootstrap";
+import { Form, Button, Alert, Modal } from "react-bootstrap";
 import { useParams, useNavigate } from "react-router-dom";
 
 export default function UserDetails() {
@@ -16,7 +16,7 @@ export default function UserDetails() {
   const [password, setPassword] = useState("");
   const [repeatPassword, setRepeatPassword] = useState("");
   const [error, setError] = useState("");
-  const [modal, setModal] = useState(false);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     async function fetchUser() {
@@ -24,17 +24,17 @@ export default function UserDetails() {
         const res = await fetch(`http://localhost:5050/user/${id}`);
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Failed to fetch user");
-        // Map backend fields into form state
         setUser({
           first_name: data.data.first_name || "",
           last_name: data.data.last_name || "",
-          birthday: data.data.birthday ? new Date(data.data.birthday).toISOString().split("T")[0] : "",
+          birthday: data.data.birthday
+            ? new Date(data.data.birthday).toISOString().split("T")[0]
+            : "",
           status: data.data.status || "",
           location: data.data.location || "",
           occupation: data.data.occupation || "",
         });
       } catch (err) {
-        console.error(err);
         setError(err.message);
       }
     }
@@ -152,10 +152,28 @@ export default function UserDetails() {
           />
         </Form.Group>
 
-        <Button variant="primary" onClick={handleSave}>
+        <Button variant="primary" onClick={() => setShowModal(true)}>
           Save Changes
         </Button>
       </Form>
+
+      {/* Confirmation Modal */}
+      <Modal show={showModal} onHide={() => setShowModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Confirm Changes</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          Are you sure you want to save the changes to this user?
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowModal(false)}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={handleSave}>
+            Confirm
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 }
