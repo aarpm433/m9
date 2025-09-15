@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
-import { Form, Button, Alert, Modal } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "./AuthContext";
+import { Form, Button, Alert } from "react-bootstrap";
+import { useParams, useNavigate } from "react-router-dom";
 
-export default function UserSettings() {
-  const { userId } = useAuth();
+export default function UserDetails() {
+  const { id } = useParams();
   const navigate = useNavigate();
   const [user, setUser] = useState({
     first_name: "",
@@ -17,31 +16,30 @@ export default function UserSettings() {
   const [password, setPassword] = useState("");
   const [repeatPassword, setRepeatPassword] = useState("");
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-  const [showModal, setShowModal] = useState(false);
+  const [modal, setModal] = useState(false);
 
   useEffect(() => {
     async function fetchUser() {
       try {
-        const res = await fetch(`http://localhost:5050/user/${userId}`);
+        const res = await fetch(`http://localhost:5050/user/${id}`);
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Failed to fetch user");
+        // Map backend fields into form state
         setUser({
           first_name: data.data.first_name || "",
           last_name: data.data.last_name || "",
-          birthday: data.data.birthday
-            ? new Date(data.data.birthday).toISOString().split("T")[0]
-            : "",
+          birthday: data.data.birthday ? new Date(data.data.birthday).toISOString().split("T")[0] : "",
           status: data.data.status || "",
           location: data.data.location || "",
           occupation: data.data.occupation || "",
         });
       } catch (err) {
+        console.error(err);
         setError(err.message);
       }
     }
     fetchUser();
-  }, [userId]);
+  }, [id]);
 
   const handleSave = async () => {
     if (password && password !== repeatPassword) {
@@ -49,10 +47,9 @@ export default function UserSettings() {
       return;
     }
     setError("");
-    setSuccess("");
 
     try {
-      const res = await fetch(`http://localhost:5050/user/${userId}`, {
+      const res = await fetch(`http://localhost:5050/user/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -64,26 +61,25 @@ export default function UserSettings() {
       const result = await res.json();
       if (!res.ok) throw new Error(result.error || "Failed to update user");
 
-      setSuccess("Profile updated successfully!");
-      setShowModal(false);
+      navigate("/admin/users");
     } catch (err) {
       setError(err.message);
-      setShowModal(false);
     }
   };
 
   return (
     <div className="p-4">
-      <h2>User Settings</h2>
+      <h2>Edit User</h2>
       {error && <Alert variant="danger">{error}</Alert>}
-      {success && <Alert variant="success">{success}</Alert>}
 
       <Form>
         <Form.Group className="mb-3">
           <Form.Label>First Name</Form.Label>
           <Form.Control
             value={user.first_name}
-            onChange={(e) => setUser({ ...user, first_name: e.target.value })}
+            onChange={(e) =>
+              setUser({ ...user, first_name: e.target.value })
+            }
           />
         </Form.Group>
 
@@ -91,7 +87,9 @@ export default function UserSettings() {
           <Form.Label>Last Name</Form.Label>
           <Form.Control
             value={user.last_name}
-            onChange={(e) => setUser({ ...user, last_name: e.target.value })}
+            onChange={(e) =>
+              setUser({ ...user, last_name: e.target.value })
+            }
           />
         </Form.Group>
 
@@ -100,7 +98,9 @@ export default function UserSettings() {
           <Form.Control
             type="date"
             value={user.birthday}
-            onChange={(e) => setUser({ ...user, birthday: e.target.value })}
+            onChange={(e) =>
+              setUser({ ...user, birthday: e.target.value })
+            }
           />
         </Form.Group>
 
@@ -108,7 +108,9 @@ export default function UserSettings() {
           <Form.Label>Status</Form.Label>
           <Form.Control
             value={user.status}
-            onChange={(e) => setUser({ ...user, status: e.target.value })}
+            onChange={(e) =>
+              setUser({ ...user, status: e.target.value })
+            }
           />
         </Form.Group>
 
@@ -116,7 +118,9 @@ export default function UserSettings() {
           <Form.Label>Location</Form.Label>
           <Form.Control
             value={user.location}
-            onChange={(e) => setUser({ ...user, location: e.target.value })}
+            onChange={(e) =>
+              setUser({ ...user, location: e.target.value })
+            }
           />
         </Form.Group>
 
@@ -124,7 +128,9 @@ export default function UserSettings() {
           <Form.Label>Occupation</Form.Label>
           <Form.Control
             value={user.occupation}
-            onChange={(e) => setUser({ ...user, occupation: e.target.value })}
+            onChange={(e) =>
+              setUser({ ...user, occupation: e.target.value })
+            }
           />
         </Form.Group>
 
@@ -146,28 +152,10 @@ export default function UserSettings() {
           />
         </Form.Group>
 
-        <Button variant="primary" onClick={() => setShowModal(true)}>
+        <Button variant="primary" onClick={handleSave}>
           Save Changes
         </Button>
       </Form>
-
-      {/* Confirmation Modal */}
-      <Modal show={showModal} onHide={() => setShowModal(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>Confirm Changes</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          Are you sure you want to save changes to your profile?
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowModal(false)}>
-            Cancel
-          </Button>
-          <Button variant="primary" onClick={handleSave}>
-            Confirm
-          </Button>
-        </Modal.Footer>
-      </Modal>
     </div>
   );
 }

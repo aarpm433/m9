@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { Form, Button, Alert, Modal } from "react-bootstrap";
+import { Form, Button, Alert } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "./AuthContext";
+import { useAuth } from "./AuthContext"; // Assuming you have auth context
 
 export default function UserSettings() {
-  const { userId } = useAuth();
+  const { userId } = useAuth(); // Logged-in user's ID
   const navigate = useNavigate();
   const [user, setUser] = useState({
     first_name: "",
@@ -18,7 +18,6 @@ export default function UserSettings() {
   const [repeatPassword, setRepeatPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     async function fetchUser() {
@@ -37,6 +36,7 @@ export default function UserSettings() {
           occupation: data.data.occupation || "",
         });
       } catch (err) {
+        console.error(err);
         setError(err.message);
       }
     }
@@ -65,10 +65,8 @@ export default function UserSettings() {
       if (!res.ok) throw new Error(result.error || "Failed to update user");
 
       setSuccess("Profile updated successfully!");
-      setShowModal(false);
     } catch (err) {
       setError(err.message);
-      setShowModal(false);
     }
   };
 
@@ -146,25 +144,28 @@ export default function UserSettings() {
           />
         </Form.Group>
 
-        <Button variant="primary" onClick={() => setShowModal(true)}>
+        <Button variant="primary" onClick={handleSave}>
           Save Changes
         </Button>
       </Form>
-
-      {/* Confirmation Modal */}
-      <Modal show={showModal} onHide={() => setShowModal(false)}>
+      
+      <Modal show={showEditModal} onHide={() => setShowEditModal(false)}>
         <Modal.Header closeButton>
-          <Modal.Title>Confirm Changes</Modal.Title>
+          <Modal.Title>Edit User</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          Are you sure you want to save changes to your profile?
+          Do you want to edit{" "}
+          <strong>
+            {selectedUser?.first_name} {selectedUser?.last_name}
+          </strong>
+          ?
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowModal(false)}>
+          <Button variant="secondary" onClick={() => setShowEditModal(false)}>
             Cancel
           </Button>
-          <Button variant="primary" onClick={handleSave}>
-            Confirm
+          <Button variant="primary" onClick={handleEdit}>
+            Edit
           </Button>
         </Modal.Footer>
       </Modal>
