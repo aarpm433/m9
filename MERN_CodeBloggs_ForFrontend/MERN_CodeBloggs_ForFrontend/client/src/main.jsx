@@ -17,6 +17,7 @@ import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import UserManager from "./components/UserManagaer.jsx";
 import UserDetails from "./components/UserDetails.jsx";
 import UserSettings from "./components/UserSettings.jsx";
+import ContentManager from "./components/ContentManager.jsx";
 
 const router = createBrowserRouter([
   {
@@ -33,7 +34,7 @@ const router = createBrowserRouter([
           { path: "admin", element: <AdminView /> },
           {path: "admin/users", element: <UserManager/> },
           {path: "users/:id", element: <UserDetails/> },
-          {path: "admin/content", element: <h1>under construction</h1> },
+          {path: "admin/content", element: <ContentManager/> },
         ],
       },
     ],
