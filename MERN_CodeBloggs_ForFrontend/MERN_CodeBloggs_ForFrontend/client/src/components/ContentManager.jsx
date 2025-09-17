@@ -1,164 +1,194 @@
-import { useEffect, useState } from "react";
-import { Table, Button, Form, Modal, Pagination } from "react-bootstrap";
+import React, { useState, useEffect } from "react";
+import { Card, Button, Form } from "react-bootstrap";
+import { FaTrash } from "react-icons/fa";
 
 export default function ContentManager() {
   const [posts, setPosts] = useState([]);
-  const [showDelete, setShowDelete] = useState(false);
-  const [deleteId, setDeleteId] = useState(null);
+  const [comments, setComments] = useState([]);
+  const [users, setUsers] = useState([]);
 
-  // Filters
+  // filters + pagination
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-
-  // Pagination
-  const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(5);
-  const [totalPages, setTotalPages] = useState(1);
-
-  const fetchPosts = async () => {
-    let url = `http://localhost:5050/posts?page=${page}&limit=${limit}`;
-    if (startDate) url += `&startDate=${startDate}`;
-    if (endDate) url += `&endDate=${endDate}`;
-
-    const res = await fetch(url);
-    const data = await res.json();
-
-    setPosts(data.data || []);
-    setTotalPages(data.pagination?.totalPages || 1);
-  };
+  const [selectAll, setSelectAll] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [resultsPerPage, setResultsPerPage] = useState(10);
 
   useEffect(() => {
-    fetchPosts();
-  }, [page, limit]);
+    fetchAllData();
+  }, []);
 
-  const handleDelete = async () => {
-    await fetch(`http://localhost:5050/post/${deleteId}`, {
-      method: "DELETE",
+  const fetchAllData = async () => {
+    const postsRes = await fetch("http://localhost:5050/posts");
+    const postsData = await postsRes.json();
+
+    const usersRes = await fetch("http://localhost:5050/users");
+    const usersData = await usersRes.json();
+
+    const commentsRes = await fetch("http://localhost:5050/comments");
+    const commentsData = await commentsRes.json();
+
+    const userList = Array.isArray(usersData) ? usersData : usersData.data || [];
+    setUsers(userList);
+
+    const postList = Array.isArray(postsData) ? postsData : postsData.data || [];
+    const postsWithUsers = postList.map(post => {
+      const postUser = userList.find(u => u._id === post.user_id);
+      return { ...post, user: postUser || null };
     });
-    setShowDelete(false);
-    fetchPosts(); // refresh list
+    setPosts(postsWithUsers);
+
+    setComments(Array.isArray(commentsData) ? commentsData : commentsData.data || []);
   };
 
-  const handleSearch = () => {
-    setPage(1);
-    fetchPosts();
+  const getInitials = (user) => {
+    if (!user) return "NA";
+    const first = user.first_name?.[0]?.toUpperCase() || "N";
+    const last = user.last_name?.[0]?.toUpperCase() || "A";
+    return first + last;
   };
+
+  const handleDeletePost = async (postId) => {
+    if (!window.confirm("Are you sure you want to delete this post?")) return;
+    await fetch(`http://localhost:5050/posts/${postId}`, { method: "DELETE" });
+    setPosts(posts.filter((p) => p._id !== postId));
+  };
+
+  const handleDeleteComment = async (commentId) => {
+    if (!window.confirm("Are you sure you want to delete this comment?")) return;
+    await fetch(`http://localhost:5050/comments/${commentId}`, { method: "DELETE" });
+    setComments(comments.filter((c) => c._id !== commentId));
+  };
+
+  // filter posts by date
+  const filteredPosts = posts.filter((post) => {
+    if (selectAll) return true;
+    const postDate = new Date(post.createdAt);
+    return (
+      (!startDate || postDate >= new Date(startDate)) &&
+      (!endDate || postDate <= new Date(endDate))
+    );
+  });
+
+  // pagination
+  const indexOfLast = currentPage * resultsPerPage;
+  const indexOfFirst = indexOfLast - resultsPerPage;
+  const currentPosts = filteredPosts
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .slice(indexOfFirst, indexOfLast);
+
+  const totalPages = Math.ceil(filteredPosts.length / resultsPerPage);
 
   return (
-    <div className="p-4">
-      <h2>Content Manager</h2>
+    <div className="container my-4">
+      <h2 className="mb-4">Posts</h2>
 
-      {/* Date Filters */}
-      <div className="d-flex gap-3 mb-3">
-        <Form.Control
-          type="date"
-          value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
+      {/* Filters */}
+      <div className="d-flex align-items-center gap-3 mb-3">
+        <Form.Check
+          type="checkbox"
+          label="Select all"
+          checked={selectAll}
+          onChange={(e) => setSelectAll(e.target.checked)}
         />
-        <Form.Control
-          type="date"
-          value={endDate}
-          onChange={(e) => setEndDate(e.target.value)}
-        />
-        <Button onClick={handleSearch}>Search</Button>
-        <Button
-          variant="secondary"
-          onClick={() => {
-            setStartDate("");
-            setEndDate("");
-            setPage(1);
-            fetchPosts();
-          }}
-        >
-          Reset
-        </Button>
+        {!selectAll && (
+          <>
+            <Form.Control
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+            />
+            <Form.Control
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+            />
+          </>
+        )}
       </div>
 
-      {/* Results per page */}
-      <div className="mb-3">
-        <Form.Select
-          value={limit}
-          onChange={(e) => {
-            setLimit(Number(e.target.value));
-            setPage(1);
-          }}
-          style={{ width: "150px" }}
-        >
-          <option value={5}>5 per page</option>
-          <option value={10}>10 per page</option>
-          <option value={20}>20 per page</option>
-        </Form.Select>
-      </div>
+      {/* Posts */}
+      {currentPosts.map((post) => (
+        <Card className="mb-3" key={post._id}>
+          <Card.Body>
+            <Card.Text>{post.content}</Card.Text>
 
-      {/* Table */}
-      <Table striped bordered hover>
-        <thead>
-          <tr>
-            <th>Post ID</th>
-            <th>Content</th>
-            <th>Date</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {posts.length === 0 ? (
-            <tr>
-              <td colSpan={4} className="text-center">
-                No posts found
-              </td>
-            </tr>
-          ) : (
-            posts.map((post) => (
-              <tr key={post._id}>
-                <td>{post._id}</td>
-                <td>{post.content}</td>
-                <td>{new Date(post.createdAt).toLocaleString()}</td>
-                <td>
-                  <Button
-                    variant="danger"
-                    size="sm"
-                    onClick={() => {
-                      setDeleteId(post._id);
-                      setShowDelete(true);
-                    }}
+            <div className="d-flex align-items-center mb-2">
+              <div
+                className="rounded-circle text-white d-flex justify-content-center align-items-center me-2"
+                style={{
+                  width: "40px",
+                  height: "40px",
+                  fontWeight: "bold",
+                  backgroundColor: "#B1ADFF",
+                }}
+              >
+                {getInitials(post.user)}
+              </div>
+              <div className="fw-semibold">
+                {post.user?.first_name} {post.user?.last_name}
+              </div>
+            </div>
+
+            <div className="d-flex justify-content-between align-items-center small text-muted mb-2">
+              <span>{new Date(post.createdAt).toLocaleString()}</span>
+              <Button size="sm" variant="danger" onClick={() => handleDeletePost(post._id)}>
+                <FaTrash />
+              </Button>
+            </div>
+
+            {/* Comments */}
+            <div className="mt-3">
+              <div className="fw-semibold mb-2">Comments:</div>
+              {comments
+                .filter((comment) => comment.post_id === post._id)
+                .map((comment) => (
+                  <div
+                    key={comment._id}
+                    className="ms-3 border-start ps-2 mb-2 d-flex justify-content-between align-items-center"
                   >
-                    Delete
-                  </Button>
-                </td>
-              </tr>
-            ))
-          )}
-        </tbody>
-      </Table>
+                    <span>
+                      {comment.content}{" "}
+                      <span className="text-muted" style={{ fontSize: "0.8rem" }}>
+                        ({new Date(comment.createdAt).toLocaleString()})
+                      </span>
+                    </span>
+                    <Button
+                      size="sm"
+                      variant="outline-danger"
+                      onClick={() => handleDeleteComment(comment._id)}
+                    >
+                      <FaTrash size={14} />
+                    </Button>
+                  </div>
+                ))}
+            </div>
+          </Card.Body>
+        </Card>
+      ))}
 
       {/* Pagination */}
-      <Pagination>
-        {[...Array(totalPages)].map((_, i) => (
-          <Pagination.Item
-            key={i + 1}
-            active={i + 1 === page}
-            onClick={() => setPage(i + 1)}
+      {totalPages > 1 && (
+        <div className="d-flex justify-content-center mt-3 gap-2">
+          <Button
+            size="sm"
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => p - 1)}
           >
-            {i + 1}
-          </Pagination.Item>
-        ))}
-      </Pagination>
-
-      {/* Delete Confirmation Modal */}
-      <Modal show={showDelete} onHide={() => setShowDelete(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>Confirm Delete</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>Are you sure you want to delete this post?</Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowDelete(false)}>
-            Cancel
+            Prev
           </Button>
-          <Button variant="danger" onClick={handleDelete}>
-            Delete
+          <span className="align-self-center">
+            Page {currentPage} of {totalPages}
+          </span>
+          <Button
+            size="sm"
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage((p) => p + 1)}
+          >
+            Next
           </Button>
-        </Modal.Footer>
-      </Modal>
+        </div>
+      )}
     </div>
   );
 }
