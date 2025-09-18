@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Card, Button, Form } from "react-bootstrap";
+import { Card, Button, Form, Placeholder } from "react-bootstrap";
 import { FaTrash } from "react-icons/fa";
 
 export default function ContentManager() {
   const [posts, setPosts] = useState([]);
   const [comments, setComments] = useState([]);
   const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   // filters + pagination
   const [startDate, setStartDate] = useState("");
@@ -19,26 +20,37 @@ export default function ContentManager() {
   }, []);
 
   const fetchAllData = async () => {
-    const postsRes = await fetch("http://localhost:5050/posts");
-    const postsData = await postsRes.json();
+    try {
+      setLoading(true);
 
-    const usersRes = await fetch("http://localhost:5050/users");
-    const usersData = await usersRes.json();
+      const postsRes = await fetch("http://localhost:5050/posts");
+      const postsData = await postsRes.json();
 
-    const commentsRes = await fetch("http://localhost:5050/comments");
-    const commentsData = await commentsRes.json();
+      const usersRes = await fetch("http://localhost:5050/users");
+      const usersData = await usersRes.json();
 
-    const userList = Array.isArray(usersData) ? usersData : usersData.data || [];
-    setUsers(userList);
+      const commentsRes = await fetch("http://localhost:5050/comments");
+      const commentsData = await commentsRes.json();
 
-    const postList = Array.isArray(postsData) ? postsData : postsData.data || [];
-    const postsWithUsers = postList.map(post => {
-      const postUser = userList.find(u => u._id === post.user_id);
-      return { ...post, user: postUser || null };
-    });
-    setPosts(postsWithUsers);
+      const userList = Array.isArray(usersData) ? usersData : usersData.data || [];
+      setUsers(userList);
 
-    setComments(Array.isArray(commentsData) ? commentsData : commentsData.data || []);
+      const postList = Array.isArray(postsData) ? postsData : postsData.data || [];
+      const postsWithUsers = postList.map((post) => {
+        const postUser = userList.find((u) => u._id === post.user_id);
+        return { ...post, user: postUser || null };
+      });
+      setPosts(postsWithUsers);
+
+      setComments(Array.isArray(commentsData) ? commentsData : commentsData.data || []);
+    } catch (err) {
+      console.error("Failed to fetch content:", err);
+      setPosts([]);
+      setUsers([]);
+      setComments([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const getInitials = (user) => {
@@ -50,14 +62,18 @@ export default function ContentManager() {
 
   const handleDeletePost = async (postId) => {
     if (!window.confirm("Are you sure you want to delete this post?")) return;
+    setLoading(true);
     await fetch(`http://localhost:5050/posts/${postId}`, { method: "DELETE" });
     setPosts(posts.filter((p) => p._id !== postId));
+    setLoading(false);
   };
 
   const handleDeleteComment = async (commentId) => {
     if (!window.confirm("Are you sure you want to delete this comment?")) return;
+    setLoading(true);
     await fetch(`http://localhost:5050/comments/${commentId}`, { method: "DELETE" });
     setComments(comments.filter((c) => c._id !== commentId));
+    setLoading(false);
   };
 
   // filter posts by date
@@ -108,67 +124,93 @@ export default function ContentManager() {
       </div>
 
       {/* Posts */}
-      {currentPosts.map((post) => (
-        <Card className="mb-3" key={post._id}>
-          <Card.Body>
-            <Card.Text>{post.content}</Card.Text>
+      {loading
+        ? [...Array(resultsPerPage)].map((_, idx) => (
+            <Card className="mb-3" key={idx}>
+              <Card.Body>
+                <Placeholder as={Card.Text} animation="wave">
+                  <Placeholder xs={10} /> <Placeholder xs={8} />
+                </Placeholder>
 
-            <div className="d-flex align-items-center mb-2">
-              <div
-                className="rounded-circle text-white d-flex justify-content-center align-items-center me-2"
-                style={{
-                  width: "40px",
-                  height: "40px",
-                  fontWeight: "bold",
-                  backgroundColor: "#B1ADFF",
-                }}
-              >
-                {getInitials(post.user)}
-              </div>
-              <div className="fw-semibold">
-                {post.user?.first_name} {post.user?.last_name}
-              </div>
-            </div>
+                <div className="d-flex align-items-center mb-2">
+                  <Placeholder
+                    as="div"
+                    animation="wave"
+                    className="rounded-circle bg-secondary me-2"
+                    style={{ width: "40px", height: "40px" }}
+                  />
+                  <Placeholder xs={4} />
+                </div>
 
-            <div className="d-flex justify-content-between align-items-center small text-muted mb-2">
-              <span>{new Date(post.createdAt).toLocaleString()}</span>
-              <Button size="sm" variant="danger" onClick={() => handleDeletePost(post._id)}>
-                <FaTrash />
-              </Button>
-            </div>
+                <Placeholder.Button xs={2} variant="danger" />
+              </Card.Body>
+            </Card>
+          ))
+        : currentPosts.map((post) => (
+            <Card className="mb-3" key={post._id}>
+              <Card.Body>
+                <Card.Text>{post.content}</Card.Text>
 
-            {/* Comments */}
-            <div className="mt-3">
-              <div className="fw-semibold mb-2">Comments:</div>
-              {comments
-                .filter((comment) => comment.post_id === post._id)
-                .map((comment) => (
+                <div className="d-flex align-items-center mb-2">
                   <div
-                    key={comment._id}
-                    className="ms-3 border-start ps-2 mb-2 d-flex justify-content-between align-items-center"
+                    className="rounded-circle text-white d-flex justify-content-center align-items-center me-2"
+                    style={{
+                      width: "40px",
+                      height: "40px",
+                      fontWeight: "bold",
+                      backgroundColor: "#B1ADFF",
+                    }}
                   >
-                    <span>
-                      {comment.content}{" "}
-                      <span className="text-muted" style={{ fontSize: "0.8rem" }}>
-                        ({new Date(comment.createdAt).toLocaleString()})
-                      </span>
-                    </span>
-                    <Button
-                      size="sm"
-                      variant="outline-danger"
-                      onClick={() => handleDeleteComment(comment._id)}
-                    >
-                      <FaTrash size={14} />
-                    </Button>
+                    {getInitials(post.user)}
                   </div>
-                ))}
-            </div>
-          </Card.Body>
-        </Card>
-      ))}
+                  <div className="fw-semibold">
+                    {post.user?.first_name} {post.user?.last_name}
+                  </div>
+                </div>
+
+                <div className="d-flex justify-content-between align-items-center small text-muted mb-2">
+                  <span>{new Date(post.createdAt).toLocaleString()}</span>
+                  <Button
+                    size="sm"
+                    variant="danger"
+                    onClick={() => handleDeletePost(post._id)}
+                  >
+                    <FaTrash />
+                  </Button>
+                </div>
+
+                {/* Comments */}
+                <div className="mt-3">
+                  <div className="fw-semibold mb-2">Comments:</div>
+                  {comments
+                    .filter((comment) => comment.post_id === post._id)
+                    .map((comment) => (
+                      <div
+                        key={comment._id}
+                        className="ms-3 border-start ps-2 mb-2 d-flex justify-content-between align-items-center"
+                      >
+                        <span>
+                          {comment.content}{" "}
+                          <span className="text-muted" style={{ fontSize: "0.8rem" }}>
+                            ({new Date(comment.createdAt).toLocaleString()})
+                          </span>
+                        </span>
+                        <Button
+                          size="sm"
+                          variant="outline-danger"
+                          onClick={() => handleDeleteComment(comment._id)}
+                        >
+                          <FaTrash size={14} />
+                        </Button>
+                      </div>
+                    ))}
+                </div>
+              </Card.Body>
+            </Card>
+          ))}
 
       {/* Pagination */}
-      {totalPages > 1 && (
+      {!loading && totalPages > 1 && (
         <div className="d-flex justify-content-center mt-3 gap-2">
           <Button
             size="sm"

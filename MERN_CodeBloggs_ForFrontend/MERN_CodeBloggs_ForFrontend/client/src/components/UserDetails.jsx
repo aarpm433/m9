@@ -155,6 +155,9 @@ export default function UserDetails() {
         <Button variant="primary" onClick={() => setShowModal(true)}>
           Save Changes
         </Button>
+        <a href="/admin/users" className="btn btn-secondary ms-2">
+          Cancel
+        </a>
       </Form>
 
       {/* Confirmation Modal */}
