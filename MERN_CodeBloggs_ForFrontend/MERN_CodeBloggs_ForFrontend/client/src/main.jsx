@@ -14,6 +14,10 @@ import AdminView from "./components/Admin.jsx";
 import Network from "./components/network.jsx";
 import { AuthProvider } from "./components/AuthContext.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import UserManager from "./components/UserManagaer.jsx";
+import UserDetails from "./components/UserDetails.jsx";
+import UserSettings from "./components/UserSettings.jsx";
+import ContentManager from "./components/ContentManager.jsx";
 
 const router = createBrowserRouter([
   {
@@ -24,10 +28,13 @@ const router = createBrowserRouter([
         element: <App />,
         children: [
           { path: "home", element: <Home /> },
-          { path: "settings", element: <h1>under construction</h1> },
+          { path: "settings", element: <UserSettings/> },
           { path: "bloggs", element: <Bloggs /> },
           { path: "network", element: <Network /> },
           { path: "admin", element: <AdminView /> },
+          {path: "admin/users", element: <UserManager/> },
+          {path: "users/:id", element: <UserDetails/> },
+          {path: "admin/content", element: <ContentManager/> },
         ],
       },
     ],

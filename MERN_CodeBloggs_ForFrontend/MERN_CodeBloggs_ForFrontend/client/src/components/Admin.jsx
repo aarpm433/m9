@@ -1,5 +1,5 @@
 import { useCookies } from "react-cookie";
-import { Card, Row, Col, Container } from "react-bootstrap";
+import { Card, Row, Col, Container, Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 
@@ -25,6 +25,9 @@ export default function AdminView() {
             <Card.Body>
               <Card.Title>User Manager</Card.Title>
               <Card.Text>Manage users here.</Card.Text>
+              <Button variant="primary" onClick={() => navigate("/admin/users")}>
+                Go to User Manager
+              </Button>
             </Card.Body>
           </Card>
         </Col>
@@ -35,6 +38,7 @@ export default function AdminView() {
             <Card.Body>
               <Card.Title>Content Manager</Card.Title>
               <Card.Text>Manage blog posts, comments, and media here.</Card.Text>
+              <Button variant="primary" onClick={() => navigate("/admin/content")}> Go to content </Button>
             </Card.Body>
           </Card>
         </Col>
