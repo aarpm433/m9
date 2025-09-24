@@ -326,4 +326,13 @@ This wireframe is useful for managing content and user information from one sing
 ```
 
 ```
+What are reactive and responsive design?
+
+In web design, taking on a reactive method simplu means that depending on the width of the device or the screen, the app will serve a different version of the application. For example, on CodeBloggs, if the window or device isn't wide enough to accomodate the large sidelocked navigation bar, it moves up to the top. The app is reactive as a result of the width or screen size, basically creating a version tailored to the needs of different users.
+
+Responsive design is a bit similar, it's when you will have a single web page designed that can change to accomodate many users. For example, in Codebloggs admin pages there are a lot of longs lists of posts, users, comments, etc. If this were to be a reactive design, we would simply adjust the number of responses of screen depending on the screen size, but in responsive design, we add a filter to select how many you want to have.
+
+
+
+```
 ---
