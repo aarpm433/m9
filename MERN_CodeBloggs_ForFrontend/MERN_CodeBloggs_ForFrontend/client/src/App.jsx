@@ -4,10 +4,10 @@ import Sidebar from "./components/SideNav";
 import { useState, useEffect } from "react";
 
 const App = () => {
-  const [isNarrow, setIsNarrow] = useState(window.innerWidth < 992);
+  const [isNarrow, setIsNarrow] = useState(window.innerWidth < 1366);
 
   useEffect(() => {
-    const handleResize = () => setIsNarrow(window.innerWidth < 992);
+    const handleResize = () => setIsNarrow(window.innerWidth < 1366);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);

@@ -12,6 +12,7 @@ export default function UserDetails() {
     status: "",
     location: "",
     occupation: "",
+    auth_level: "basic",
   });
   const [password, setPassword] = useState("");
   const [repeatPassword, setRepeatPassword] = useState("");
@@ -135,26 +136,53 @@ export default function UserDetails() {
         </Form.Group>
 
         <Form.Group className="mb-3">
-          <Form.Label>New Password</Form.Label>
+          <Form.Label>Auth level</Form.Label>
           <Form.Control
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            value={user.auth_level}
+            onChange={(e) =>
+              setUser({ ...user, auth_level: e.target.value })
+            }
           />
         </Form.Group>
 
-        <Form.Group className="mb-3">
-          <Form.Label>Repeat Password</Form.Label>
-          <Form.Control
-            type="password"
-            value={repeatPassword}
-            onChange={(e) => setRepeatPassword(e.target.value)}
-          />
-        </Form.Group>
 
-        <Button variant="primary" onClick={() => setShowModal(true)}>
-          Save Changes
-        </Button>
+          <Form.Group className="mb-3">
+            <Form.Label>New Password</Form.Label>
+            <Form.Control
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              isInvalid={!!error && error.includes("Passwords")}
+            />
+          </Form.Group>
+
+          <Form.Group className="mb-3">
+            <Form.Label>Repeat Password</Form.Label>
+            <Form.Control
+              type="password"
+              value={repeatPassword}
+              onChange={(e) => setRepeatPassword(e.target.value)}
+              isInvalid={!!error && error.includes("Passwords")}
+            />
+            <Form.Control.Feedback type="invalid">
+              Passwords do not match.
+            </Form.Control.Feedback>
+          </Form.Group>
+
+          <Button
+            variant="primary"
+            onClick={() => {
+              if (password && password !== repeatPassword) {
+                setError("Passwords do not match.");
+                return;
+              }
+              setError("");
+              setShowModal(true);
+            }}
+          >
+            Save Changes
+          </Button>
+
         <a href="/admin/users" className="btn btn-secondary ms-2">
           Cancel
         </a>

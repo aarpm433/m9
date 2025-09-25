@@ -333,6 +333,9 @@ In web design, taking on a reactive method simplu means that depending on the wi
 Responsive design is a bit similar, it's when you will have a single web page designed that can change to accomodate many users. For example, in Codebloggs admin pages there are a lot of longs lists of posts, users, comments, etc. If this were to be a reactive design, we would simply adjust the number of responses of screen depending on the screen size, but in responsive design, we add a filter to select how many you want to have.
 
 
+The reason for the chosen reactive width being 1366 pixels is the following. One of the largest mobile devices is 1366 pixels wide and I want all mobile devices to have the sidebar on the top. 
+
+
 
 ```
 ---
