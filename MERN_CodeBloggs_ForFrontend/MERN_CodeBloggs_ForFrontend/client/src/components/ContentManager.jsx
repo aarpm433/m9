@@ -209,6 +209,26 @@ export default function ContentManager() {
             </Card>
           ))}
 
+          {/* Results per page selector */}
+          <div className="d-flex align-items-center gap-2 mb-3">
+            <span>Results per page:</span>
+            <Form.Select
+              size="sm"
+              style={{ width: "auto" }}
+              value={resultsPerPage}
+              onChange={(e) => {
+                setResultsPerPage(Number(e.target.value));
+                setCurrentPage(1); // reset to first page when changing
+              }}
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+            </Form.Select>
+          </div>
+
+
       {/* Pagination */}
       {!loading && totalPages > 1 && (
         <div className="d-flex justify-content-center mt-3 gap-2">

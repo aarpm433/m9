@@ -12,7 +12,7 @@ export default function UserDetails() {
     status: "",
     location: "",
     occupation: "",
-    auth_level: "basic",
+    auth_level: "",
   });
   const [password, setPassword] = useState("");
   const [repeatPassword, setRepeatPassword] = useState("");
@@ -34,6 +34,7 @@ export default function UserDetails() {
           status: data.data.status || "",
           location: data.data.location || "",
           occupation: data.data.occupation || "",
+          auth_level: data.data.auth_level || "",
         });
       } catch (err) {
         setError(err.message);
